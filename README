@@ -1,3 +1,147 @@
-terraform init
-terraform plan
-terraform apply
+Build environment using Terraform 
+
+official document: https://learn.hashicorp.com/tutorials/terraform/install-cli 
+
+1. Install yum-config-manager to manage your repositories. 
+
+sudo yum install -y yum-utils 
+
+2. Use yum-config-manager to add the official HashiCorp Linux repository. 
+
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo 
+
+3. Install. 
+
+sudo yum -y install terraform 
+
+4. Verify the installation 
+
+terraform -help 
+
+To create Single EC2 instance   
+
+This creates EC2 instance on the default VPC. 
+
+1. Create two files provider.tf and main.tf 
+
+2. The contents of provider.tf as follows- 
+
+provider "aws"{ 
+
+access_key =  "<YOUR AWS ACCESS KEY HERE>" 
+
+secret_key = "<YOUR SECRET KEY HERE>" 
+
+region = "<REGION HERE>" 
+
+} 
+
+3. The contents of main.tf as follows- 
+
+resource "aws_instance" "<INSTANCE-NAME HERE>"  { 
+
+ami = "ami-015823f149dddbd48" 
+
+instance_type = "<MENTION-INSTANCE-TYPE HERE" 
+
+tags = { 
+
+Name = "terracentos" 
+
+} 
+
+} 
+
+Create EC2 instance using the following command in the folder which contains main.tf 
+
+1. terraform init 
+
+2. terraform plan 
+
+3. terraform apply 
+
+To create Multiple EC2 instances 
+
+This create EC2 instances on the default VPC. 
+
+Main.tf - edit this file for key name and public key filename 
+
+resource "aws_key_pair" "terraform-demo" { 
+
+  key_name   = “<KEY-NAME>" 
+
+  public_key = file("<PUBLIC KEY FILENAME>") 
+
+} 
+
+resource "aws_instance" "my-instance" { 
+
+  count         = var.instance_count 
+
+  ami           = var.ami 
+
+  instance_type = var.instance_type 
+
+  key_name      = aws_key_pair.terraform-demo.key_name 
+
+  user_data     = <<-EOF 
+
+                  #!/bin/bash 
+
+                  git --version 
+
+                  EOF 
+
+   tags = { 
+
+    Name  = "Terraform-${count.index + 1}" 
+
+    Batch = "5AM" 
+
+  } 
+
+} 
+
+provider.tf - edit this file for access key, secret key, region 
+
+provider "aws"{ 
+
+access_key =  "<YOUR AWS ACCESS KEY HERE>" 
+
+secret_key = "<YOUR SECRET KEY HERE>" 
+
+region = "<REGION HERE>" 
+
+} 
+
+variables.tf - edit this file for instance count, instance type, region 
+
+variable "ami" { 
+
+   default = "ami-015823f149dddbd48" 
+
+} 
+
+variable "instance_count" { 
+
+  default = "<MENTION-NUMBER OF INSTANCES REQUIRED" 
+
+} 
+
+variable "instance_type" { 
+
+  default = "<MENTION INSTANCE-TYPE>" 
+
+} 
+
+variable "aws_region" { 
+
+  default = "<MENTION REGION HERE>" 
+
+} 
+
+you can find code at - https://github.com/deesnest/terraformec2.git 
+
+ 
+
+ 
